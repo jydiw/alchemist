@@ -20,6 +20,9 @@ symbols = ('e-',
     'Rg', 'Cn', 'Nh', 'Fl', 'Mc', 'Lv', 'Ts', 'Og'
     )
 
+def Z(symbol):
+    return symbols.index(symbol)
+
 names = ('negative charge',
     'Hydrogen', 'Helium', 'Lithium', 'Beryllium', 'Boron', 'Carbon',
     'Nitrogen', 'Oxygen', 'Fluorine', 'Neon', 'Sodium', 'Magnesium',

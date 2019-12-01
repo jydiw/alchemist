@@ -6,7 +6,7 @@ def get_text(file, sleep=0, counter=0):
     if counter == 2:        # so we stop the recursive function
         pass
     # grab the raw text using parser.from_file()
-    raw = parser.from_file(file, xmlContent=True)
+    raw = parser.from_file(file)
     status = raw['status']          # returns the status code from tika server
     # if things go well, return the raw text
     if status == 200:
