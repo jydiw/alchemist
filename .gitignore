@@ -1,5 +1,9 @@
 **/.ipynb_checkpoints
 **/.vscode
+/assets
+/assets/**
 /data
 /data/**
+/static
+/static/**
 .DS_Store

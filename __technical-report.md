@@ -7,23 +7,24 @@
 
 `alchemist` aims to remove the user from as much of the programming as possible, utilizing natural language processing and machine learning to trigger appropriate chemistry problem-solving algorithms.
 
-The package can be summarized by the following milestones:
+The project can be summarized by the following milestones:
 
 1. natural language processing (NLP)
-    - recognizing the topic of a chemistry word problem
-    - parsing chemically relevant information and transforming English syntax into chemical symbols
-    - translation of chemical names into chemical formulas
+    - (complete) recognizing the topic of a chemistry word problem
+    - (incomplete) parsing chemically relevant information and transforming English syntax into chemical symbols
+    - (in progress) translation of chemical names into chemical formulas
 2. problem-solving
-    - applying proper algorithms to solve chemistry problems
-    - accessing the processing power of computers to use experimental data to predict the products of a chemical reaction
+    - (complete) applying proper algorithms to solve chemistry problems
+    - (complete) accessing the processing power of computers to use experimental data to predict the products of a chemical reaction
 
 This project is inspired by current research in machine learning and NLP, and significant portions of code are imported from outside libraries.
 
-- [chempy](https://github.com/bjodah/chempy), a robust chemistry package offering powerful modeling tools for inorganic and physical chemistry
+- inspiration from [mat2vec](https://github.com/materialsintelligence/mat2vec), an application of [Word2Vec](https://radimrehurek.com/gensim/models/word2vec.html) shown to extract domain-specific knowledge from materials science texts
+- [tika-python](https://github.com/chrismattmann/tika-python), a port of the [Apache Tika](http://tika.apache.org/) library that parses text from pdf files
 - [chemdataextractor](https://github.com/mcs07/ChemDataExtractor), a chemistry-aware NLP toolkit
 - [pubchempy](https://github.com/mcs07/PubChemPy), an API wrapper providing access to [pubchem](https://pubchem.ncbi.nlm.nih.gov/), the world's largest free chemical database, operated by the [National Center for Biotechnology Information](https://www.ncbi.nlm.nih.gov/)
-- [tika-python](https://github.com/chrismattmann/tika-python), a python port of the [Apache Tika](http://tika.apache.org/) library that parses text from `pdf` files
-- inspiration from [mat2vec](https://github.com/materialsintelligence/mat2vec), an application which has been shown to extract chemical knowledge from text (based on [Word2Vec](https://radimrehurek.com/gensim/models/word2vec.html))
+- [chempy](https://github.com/bjodah/chempy), a chemistry package with many useful algorithms for physical, inorganic, and analytical chemistry
+- [CHNOSZ](http://chnosz.net/), a package for [R](http://www.r-project.org/) with specific applications for thermodynamic calculations in aqueous geochemistry
 - and the usual suspects: [pandas](https://pandas.pydata.org/), [NumPy](https://numpy.org/), [TensorFlow/Keras](https://www.tensorflow.org/guide/keras), and python itself.
 
 ## Natural Language Processing
@@ -33,16 +34,18 @@ This project is inspired by current research in machine learning and NLP, and si
 
 <img src="http://mccormickml.com/assets/word2vec/skip_gram_net_arch.png">
 
-In contrast to continuous bag-of-word models, word vectors mathematically quantify word meaning by focusing on a word's co-occurence with neighbor words. For example, a pair of synonyms would likely present themselves around similar words since they carry similar meaning and have identical parts of speech; since their contexts are similar, that means their word-vector representation is mathematically similar as well.
+While continuous bag-of-word models attempt to quantify word importance by calculating overall frequency, word vectors focus on a word's co-occurence with neighboring words. A word's vector representation does not depend on its own frequency but on the *context* of that word within the corpus. 
+
+>Example: the words "beautiful" and "pretty" can be used somewhat interchangably, which would imply that the words they co-occur with are similar. Therefore, their word vectors would occupy similar space and have a high cosine similarity.
 
 <img src="https://s3-ap-south-1.amazonaws.com/av-blog-media/wp-content/uploads/2017/06/06062705/Word-Vectors.png">
 
-Earlier this year, Tshitoyan et. al. published a paper in Nature Magazine titled: [*Unsupervised word embeddings capture latent knowledge from materials science literature*](https://www.nature.com/articles/s41586-019-1335-8). There, they demonstrated that these Word2Vec techniques were sophisticated enough to connect related concepts within the field of materials science. In addition, the models were capable of uncovering as-of-then undiscovered chemical properties. The authors propose a paradigm in which machine learning allows us to more quickly and efficiently scan the history
+Earlier this year, Tshitoyan et. al. [reported](https://www.nature.com/articles/s41586-019-1335-8) how these Word2Vec models were sophisticated enough to extract materials science knowledge without any explicit insertion of chemical knowledge. The model was able to understand the underlying structure of the periodic table, cluster materials based on both chemical composition and application, and (perhaps most notably) recommend materials for functional applications before their discovery. 
 
-<img src="https://scx2.b-cdn.net/gfx/news/hires/2019/1-withlittletr.jpg">
+<img src="https://miro.medium.com/max/14362/1*_5Q3a91iS3SiG3d15MCQoA.png">
 
 ### Training a Model to Learn Undergraduate Chemistry
-Inspired by this field of NLP, `alchemist` uses a related neural network architecture called skip gram Word2Vec, trained on 15 general chemistry textbooks. The result was a Word2Vec model that accurately ranks text by their similarity to key phrases or topics.
+Inspired by this field of NLP, `alchemist` uses a specific variant of the Word2Vec neural network architecture called skip gram Word2Vec, trained on 15 general chemistry textbooks. The result was a Word2Vec model that accurately ranks text by their similarity to key phrases or topics.
 
 In this project, we chose to limit the scope of our categorization into a binary class:
 
