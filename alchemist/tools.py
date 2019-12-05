@@ -2,6 +2,8 @@ import re
 import pickle
 import numpy as np
 import pandas as pd
+import chemdataextractor as cde
+import pubchempy as pcp
 
 import sympy
 import itertools
@@ -12,8 +14,8 @@ from chempy import Substance
 from chempy import Reaction
 from chempy.util import periodic
 
-STOICH_DF = pickle.load(open('../data/processed/stoich_df.p', 'rb'))
-THERMO_DF = pickle.load(open('../data/processed/thermo_df.p', 'rb'))
+STOICH_DF = pickle.load(open('./data/processed/stoich_df.p', 'rb'))
+THERMO_DF = pickle.load(open('./data/processed/thermo_df.p', 'rb'))
 
 
 def check_coefficients(reactants, products):
@@ -110,7 +112,7 @@ def formula_state_separator(formula, keep_state=False):
         return formula
 
 
-def get_gibbs(formula, df=False):
+def get_gibbs(formula, energy='G', df=False):
     '''
     Retrieves the free energy value, in J, of a single substance
     
@@ -136,7 +138,7 @@ def get_gibbs(formula, df=False):
     if df:
         return matches
     else:
-        return list(matches['G'])
+        return list(matches[energy])[0]
 
 
 def state_predictor(formula):
@@ -183,7 +185,7 @@ def stoich_filter(substances, df=False, thorough=False, exact=False):
     if type(substances) == str:
         substances = [substances]
 
-    stoich_temp = stoich_df.copy()
+    stoich_temp = STOICH_DF.copy()
 
     # mask to keep the charge and formula columns in final dataframe
     z_keep = [0, 'formula'] + list(Z_unique(substances))
@@ -215,7 +217,7 @@ def stoich_filter(substances, df=False, thorough=False, exact=False):
         else:
             stoich_list = [formula_state_separator(f) for f in stoich_list]
             substances = [formula_state_separator(s) for s in substances]
-            return [state_predictor(f) for f in stoich_list if f not in substances]
+            return set([state_predictor(f) for f in stoich_list if f not in substances])
 
 
 def formula_rearranger(formula):
@@ -253,7 +255,7 @@ def formula_rearranger(formula):
             # print 'item %r, count %r, minind %r' % (item, count, min_index)
             return count, -min_index
     # pick the highest-count/earliest item
-    return max(groups, key=_auxfun)[0]
+        return max(groups, key=_auxfun)[0]
 
     if formula in list(THERMO_DF['formula']):
         return formula
@@ -335,14 +337,14 @@ def standard_gibbs_free_energy(reactants, products, kJ=True):
     def gibbs_sum(side):
         interim_delG = 0
         for s in side:
-            interim_delG += min(get_gibbs(s[0])) * s[1]
+            interim_delG += get_gibbs(s[0]) * s[1]
         return interim_delG
 
     delG = gibbs_sum(prod) - gibbs_sum(reac)
     return delG / (1 + 999*kJ)
 
 
-def reaction_predictor(reactants, max_length):
+def reaction_predictor(reactants, max_length=12):
     '''
     Returns the balanced chemical equation of the predicted reaction based on
     minimizing overall delG values.
@@ -360,22 +362,24 @@ def reaction_predictor(reactants, max_length):
     '''
     reactants = [state_predictor(r) for r in reactants]
     possibilities = stoich_filter(reactants)
-
     print('scoping possibilities...')
     if len(possibilities) > max_length:
         possibilities = np.array(list(possibilities))
         energies = np.array(
-            [min(get_gibbs(s)) / Substance.from_formula(s).mass for s in possibilities])
+            [get_gibbs(s, 'G') / get_gibbs(s, 'mass') for s in possibilities])
         indices = energies.argsort()
         sorted_possibilities = possibilities[indices]
         possibilities = sorted_possibilities[:(max_length)]
 
     print('  optimizing combinations...')
     combinations = []
-    comb_length = min(6, len(possibilities))
+    print(possibilities)
+    comb_length = min(6, len(reactants) + 3)
     for i in range(1, comb_length):
         combinations += list(itertools.combinations(possibilities, i))
-    combinations = [c for c in combinations if Z_unique(c) == Z_unique(reactants)]
+    combinations = [c for c in combinations if Z_unique(
+        c) == Z_unique(reactants)]
+    print(combinations)
 
     print('    deriving equations...')
     good_combinations = []
